@@ -1,0 +1,554 @@
+{% extends "base.html" %}
+
+{% block title %}Operaciones - Portfolio{% endblock %}
+
+{% block content %}
+<style>
+    .ops-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .ops-header-copy {
+        flex: 1 1 520px;
+    }
+
+    .ops-header-copy p {
+        margin-bottom: 0;
+        max-width: 72ch;
+    }
+
+    .ops-header-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .section-head p {
+        margin-bottom: 0;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .field-full {
+        grid-column: 1 / -1;
+    }
+
+    .field-group label {
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .field-help {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+    }
+
+    .form-actions-note {
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+
+    .toolbar-copy p {
+        margin-bottom: 0;
+    }
+
+    .search-form {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .search-input {
+        min-width: 260px;
+    }
+
+    .chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 14px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 14px;
+        border: 1px solid #dbe3f0;
+        background: var(--surface-soft);
+        color: #374151;
+        transition: 0.2s ease;
+    }
+
+    .chip:hover {
+        background: #eef2ff;
+        color: var(--primary);
+        border-color: #bfdbfe;
+    }
+
+    .chip.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .history-meta {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+
+    .tabla-operaciones td:last-child,
+    .tabla-operaciones th:last-child {
+        text-align: center;
+    }
+
+    .acciones-columna {
+        width: 110px;
+        text-align: center;
+    }
+
+    .acciones-botones {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .accion-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.15s ease;
+        padding: 0;
+        text-decoration: none;
+    }
+
+    .accion-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .accion-editar {
+        background: var(--primary);
+        color: white;
+    }
+
+    .accion-editar:hover {
+        background: var(--primary-hover);
+    }
+
+    .accion-borrar {
+        background: var(--danger);
+        color: white;
+    }
+
+    .accion-borrar:hover {
+        background: var(--danger-hover);
+    }
+
+    .accion-btn svg {
+        width: 16px;
+        height: 16px;
+        display: block;
+        flex-shrink: 0;
+    }
+
+    .ticker-badge {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #3730a3;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+    }
+
+    .empty-box {
+        border: 1px dashed var(--border-strong);
+        border-radius: 12px;
+        padding: 18px;
+        background: var(--surface-soft);
+        color: var(--muted);
+    }
+
+    .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .page-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 38px;
+        height: 38px;
+        padding: 0 10px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        border: 1px solid var(--border-strong);
+        background: var(--surface-soft);
+        color: var(--secondary-text);
+        transition: 0.2s ease;
+    }
+
+    .page-btn:hover {
+        background: #eef2ff;
+        color: var(--primary);
+        border-color: #bfdbfe;
+    }
+
+    .page-btn.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .page-btn.disabled {
+        opacity: 0.4;
+        pointer-events: none;
+    }
+
+    .import-section {
+        border-top: 1px solid var(--border);
+        padding-top: 18px;
+        margin-top: 4px;
+    }
+
+    .import-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .import-row input[type="file"] {
+        min-height: unset;
+        padding: 8px 12px;
+        font-size: 13px;
+        flex: 1 1 260px;
+    }
+
+    @media (max-width: 860px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .search-input {
+            min-width: 100%;
+        }
+    }
+</style>
+
+<datalist id="tickers-lista">
+    {% for t in tickers_existentes %}
+    <option value="{{ t }}">
+    {% endfor %}
+</datalist>
+
+<div class="card">
+    <div class="ops-header">
+        <div class="ops-header-copy">
+            <h1>Operaciones</h1>
+            <p>
+                Registra compras y ventas, filtra rápidamente por ticker o nombre y mantén
+                el historial ordenado con el mismo estilo del resto de la app.
+            </p>
+        </div>
+
+        <div class="ops-header-actions">
+            <a href="#nueva-operacion" class="btn-link btn-primary">Nueva operación</a>
+            <a href="{{ url_for('cartera') }}" class="btn-link btn-secondary">Ver cartera</a>
+        </div>
+    </div>
+</div>
+
+<div class="card" id="nueva-operacion">
+    <div class="section-head">
+        <div>
+            <h2>Nueva operación</h2>
+            <p>Introduce los datos básicos de la compra o venta.</p>
+        </div>
+    </div>
+
+    <form action="{{ url_for('agregar_operacion') }}" method="POST">
+        <div class="form-grid">
+            <div class="field-group">
+                <label for="fecha">Fecha</label>
+                <input type="date" id="fecha" name="fecha" value="{{ today }}" required>
+            </div>
+
+            <div class="field-group">
+                <label for="ticker">Ticker</label>
+                <input type="text" id="ticker" name="ticker" placeholder="Ej. BTC, ETH, ORO, PLATA"
+                       list="tickers-lista" autocomplete="off">
+                <div class="field-help">Se guardará en mayúsculas automáticamente.</div>
+            </div>
+
+            <div class="field-group">
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" name="nombre" placeholder="Ej. Bitcoin" required>
+            </div>
+
+            <div class="field-group">
+                <label for="tipo">Tipo</label>
+                <select id="tipo" name="tipo" required>
+                    <option value="Compra">Compra</option>
+                    <option value="Venta">Venta</option>
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label for="cantidad">Cantidad</label>
+                <input type="number" step="any" id="cantidad" name="cantidad" placeholder="0.075" required>
+            </div>
+
+            <div class="field-group">
+                <label for="precio_eur">Precio en EUR</label>
+                <input type="number" step="any" id="precio_eur" name="precio_eur" placeholder="62157.01" required>
+            </div>
+
+            <div class="field-group">
+                <label for="comision_eur">Comisión en EUR</label>
+                <input type="number" step="any" id="comision_eur" name="comision_eur" value="0">
+            </div>
+
+            <div class="field-group">
+                <label for="estrategia">Estrategia</label>
+                <input type="text" id="estrategia" name="estrategia" placeholder="Largo plazo">
+            </div>
+
+            <div class="field-group field-full">
+                <label for="notas">Notas</label>
+                <input type="text" id="notas" name="notas" placeholder="Observaciones">
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <div class="form-actions-note">
+                Cantidades con precisión alta, dinero mostrado en formato EUR.
+            </div>
+            <button type="submit" class="btn-primary">Guardar operación</button>
+        </div>
+    </form>
+
+    <div class="import-section">
+        <h3>Importar desde CSV</h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+            Columnas requeridas: <code>fecha</code>, <code>nombre</code>, <code>tipo</code>,
+            <code>cantidad</code>, <code>precio_eur</code>. Opcionales: <code>ticker</code>,
+            <code>comision_eur</code>, <code>estrategia</code>, <code>notas</code>.
+        </p>
+        <form action="{{ url_for('importar_csv') }}" method="POST" enctype="multipart/form-data">
+            <div class="import-row">
+                <input type="file" name="archivo_csv" accept=".csv" required>
+                <button type="submit" class="btn-secondary">Importar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="toolbar">
+        <div class="toolbar-copy">
+            <h2>Historial</h2>
+            <p>Filtra por búsqueda y por tipo para localizar operaciones rápido.</p>
+        </div>
+
+        <form method="GET" action="{{ url_for('operaciones') }}" class="search-form">
+            <input
+                type="search"
+                name="q"
+                value="{{ q or '' }}"
+                placeholder="Buscar por ticker o nombre"
+                class="search-input"
+            >
+            {% if tipo %}
+            <input type="hidden" name="tipo" value="{{ tipo }}">
+            {% endif %}
+            <button type="submit" class="btn-primary">Buscar</button>
+            {% if q or tipo %}
+            <a href="{{ url_for('operaciones') }}" class="btn-link btn-secondary">Limpiar</a>
+            {% endif %}
+            <a href="{{ url_for('exportar_csv') }}{% if q %}?q={{ q }}{% endif %}{% if tipo %}{% if q %}&{% else %}?{% endif %}tipo={{ tipo }}{% endif %}"
+               class="btn-link btn-secondary">
+                ↓ CSV
+            </a>
+        </form>
+    </div>
+
+    <div class="chips">
+        <a href="{{ url_for('operaciones', q=q) }}" class="chip {% if not tipo %}active{% endif %}">Todas</a>
+        <a href="{{ url_for('operaciones', q=q, tipo='Compra') }}" class="chip {% if tipo == 'Compra' %}active{% endif %}">Compras</a>
+        <a href="{{ url_for('operaciones', q=q, tipo='Venta') }}" class="chip {% if tipo == 'Venta' %}active{% endif %}">Ventas</a>
+    </div>
+
+    {% if operaciones %}
+    <div class="history-meta">
+        Mostrando {{ operaciones|length }} de {{ total_count }} operación{% if total_count != 1 %}es{% endif %}
+        {% if q or tipo %}con los filtros actuales{% endif %}
+        (página {{ page }} de {{ total_pages }}).
+    </div>
+
+    <div class="table-wrap">
+        <table class="tabla-operaciones">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Ticker</th>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th class="num">Cantidad</th>
+                    <th class="num">Precio</th>
+                    <th class="num">Comisión</th>
+                    <th class="num">Importe total</th>
+                    <th>Estrategia</th>
+                    <th>Notas</th>
+                    <th class="acciones-columna">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for op in operaciones %}
+                <tr>
+                    <td>{{ op["fecha"] }}</td>
+                    <td>
+                        {% if op["ticker"] %}
+                        <span class="ticker-badge">{{ op["ticker"] }}</span>
+                        {% else %}
+                        <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ op["nombre"] }}</td>
+                    <td>
+                        <span class="{% if op['tipo'] == 'Compra' %}status-buy{% else %}status-sell{% endif %}">
+                            {{ op["tipo"] }}
+                        </span>
+                    </td>
+                    <td class="num">{{ op["cantidad"] | num }}</td>
+                    <td class="num">{{ op["precio_eur"] | eur }}</td>
+                    <td class="num">{{ op["comision_eur"] | eur }}</td>
+                    <td class="num">{{ (op["cantidad"] * op["precio_eur"] + op["comision_eur"]) | eur }}</td>
+                    <td>{{ op["estrategia"] or "" }}</td>
+                    <td>{{ op["notas"] or "" }}</td>
+                    <td>
+                        <div class="acciones-botones">
+                            <a
+                                href="{{ url_for('editar_operacion', id=op['id']) }}"
+                                class="accion-btn accion-editar"
+                                title="Editar operación"
+                                aria-label="Editar operación"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                    <path d="M12 20h9"></path>
+                                    <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+                                </svg>
+                            </a>
+
+                            <form action="{{ url_for('borrar_operacion', id=op['id']) }}" method="POST" onsubmit="return confirm('¿Seguro que quieres borrar esta operación?');" style="margin: 0; display: inline;">
+                                <button
+                                    type="submit"
+                                    class="accion-btn accion-borrar"
+                                    title="Borrar operación"
+                                    aria-label="Borrar operación"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                        <path d="M18 6L6 18"></path>
+                                        <path d="M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if total_pages > 1 %}
+    <div class="pagination">
+        <a href="{{ url_for('operaciones', q=q, tipo=tipo, page=page-1) }}"
+           class="page-btn {% if page <= 1 %}disabled{% endif %}">‹</a>
+
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+                <a href="{{ url_for('operaciones', q=q, tipo=tipo, page=p) }}"
+                   class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
+            {% elif p == page - 3 or p == page + 3 %}
+                <span class="page-btn disabled" style="pointer-events:none;">…</span>
+            {% endif %}
+        {% endfor %}
+
+        <a href="{{ url_for('operaciones', q=q, tipo=tipo, page=page+1) }}"
+           class="page-btn {% if page >= total_pages %}disabled{% endif %}">›</a>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-box">
+        {% if q or tipo %}
+        No hay operaciones que coincidan con los filtros actuales.
+        {% else %}
+        Todavía no hay operaciones registradas.
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

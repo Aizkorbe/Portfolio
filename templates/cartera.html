@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+
+{% block title %}Cartera - Portfolio{% endblock %}
+
+{% block content %}
+<style>
+    .cartera-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .cartera-header-copy {
+        flex: 1 1 520px;
+    }
+
+    .cartera-header-copy p {
+        margin-bottom: 0;
+        max-width: 72ch;
+    }
+
+    .cartera-header-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .kpi-grid-5 {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .kpi-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .kpi-card {
+        padding: 18px 18px 16px;
+    }
+
+    .kpi-label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 8px;
+        line-height: 1.3;
+    }
+
+    .kpi-value {
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .section-head p { margin-bottom: 0; }
+
+    .footer-note {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .ticker-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #3730a3;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+    }
+
+    .asset-nombre {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 3px;
+    }
+
+    .unidad-precio {
+        color: var(--muted);
+        font-size: 12px;
+        margin-left: 4px;
+    }
+
+    .tabla-posiciones {
+        min-width: 1200px;
+    }
+
+    .empty-box {
+        border: 1px dashed var(--border-strong);
+        border-radius: 12px;
+        padding: 18px;
+        background: var(--surface-soft);
+        color: var(--muted);
+    }
+
+    .charts-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        min-width: 0;
+    }
+
+    .charts-grid--single {
+        grid-template-columns: 1fr;
+    }
+
+    .charts-grid > * {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .charts-grid .chart-box {
+        width: 100%;
+        overflow: hidden;
+    }
+
+    @media (max-width: 1100px) {
+        .kpi-grid-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .kpi-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 900px) {
+        .charts-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 860px) {
+        .kpi-grid-5,
+        .kpi-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .kpi-value { font-size: 20px; }
+    }
+
+    @media (max-width: 520px) {
+        .kpi-grid-5,
+        .kpi-grid-4 { grid-template-columns: 1fr; }
+    }
+</style>
+
+<!-- Header -->
+<div class="card">
+    <div class="cartera-header">
+        <div class="cartera-header-copy">
+            <h1>Cartera</h1>
+            <p>
+                Posiciones abiertas, rendimiento y historial de ventas.<br>
+                Última actualización de precios: <strong>{{ last_update_text }}</strong>
+            </p>
+        </div>
+        <div class="cartera-header-actions">
+            <a href="{{ url_for('cartera', refresh=1) }}" class="btn-link btn-primary">
+                ↻ Actualizar precios
+            </a>
+            <a href="{{ url_for('operaciones') }}" class="btn-link btn-secondary">Operaciones</a>
+        </div>
+    </div>
+</div>
+
+<!-- KPIs fila 1 -->
+<div class="kpi-grid-5">
+    <div class="card kpi-card">
+        <div class="kpi-label">Total invertido</div>
+        <div class="kpi-value">{{ resumen_cartera.total_invertido_eur | eur }}</div>
+    </div>
+    <div class="card kpi-card">
+        <div class="kpi-label">Total vendido</div>
+        <div class="kpi-value">{{ resumen_cartera.total_vendido_eur | eur }}</div>
+    </div>
+    <div class="card kpi-card">
+        <div class="kpi-label">Resultado realizado</div>
+        <div class="kpi-value {% if resumen_cartera.resultado_realizado_eur > 0 %}pnl-pos{% elif resumen_cartera.resultado_realizado_eur < 0 %}pnl-neg{% endif %}">
+            {{ resumen_cartera.resultado_realizado_eur | eur }}
+        </div>
+    </div>
+    <div class="card kpi-card">
+        <div class="kpi-label">Resultado no realizado</div>
+        <div class="kpi-value {% if resumen_cartera.resultado_no_realizado_eur > 0 %}pnl-pos{% elif resumen_cartera.resultado_no_realizado_eur < 0 %}pnl-neg{% endif %}">
+            {{ resumen_cartera.resultado_no_realizado_eur | eur }}
+        </div>
+    </div>
+    <div class="card kpi-card">
+        <div class="kpi-label">Resultado total</div>
+        <div class="kpi-value {% if resumen_cartera.resultado_total_eur > 0 %}pnl-pos{% elif resumen_cartera.resultado_total_eur < 0 %}pnl-neg{% endif %}">
+            {{ resumen_cartera.resultado_total_eur | eur }}
+        </div>
+    </div>
+</div>
+
+<!-- KPIs fila 2 -->
+<div class="kpi-grid-4">
+    <div class="card kpi-card">
+        <div class="kpi-label">Coste abierto</div>
+        <div class="kpi-value">{{ resumen_cartera.coste_abierto_eur | eur }}</div>
+    </div>
+    <div class="card kpi-card">
+        <div class="kpi-label">Valor actual</div>
+        <div class="kpi-value">{{ resumen_cartera.valor_actual_total_eur | eur }}</div>
+    </div>
+    <div class="card kpi-card">
+        <div class="kpi-label">Comisiones compra</div>
+        <div class="kpi-value">{{ resumen_cartera.comisiones_compra_eur | eur }}</div>
+    </div>
+    <div class="card kpi-card">
+        <div class="kpi-label">Comisiones venta</div>
+        <div class="kpi-value">{{ resumen_cartera.comisiones_venta_eur | eur }}</div>
+    </div>
+</div>
+
+{% if pie_chart or performance_chart %}
+<div class="charts-grid{% if not (pie_chart and performance_chart) %} charts-grid--single{% endif %}">
+    {% if pie_chart %}
+    <div class="card">
+        <div class="section-head">
+            <div>
+                <h2>Distribución de cartera</h2>
+                <p>Peso de cada activo sobre el valor actual total.</p>
+            </div>
+        </div>
+        <div class="chart-box">
+            {{ pie_chart | safe }}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if performance_chart %}
+    <div class="card">
+        <div class="section-head">
+            <div>
+                <h2>Rendimiento por activo</h2>
+                <p>P/L % no realizado de cada posición abierta.</p>
+            </div>
+        </div>
+        <div class="chart-box">
+            {{ performance_chart | safe }}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Posiciones abiertas -->
+<div class="card">
+    <div class="section-head">
+        <div>
+            <h2>Posiciones abiertas</h2>
+            <p>Activos con posición activa y rendimiento estimado a precios actuales.</p>
+        </div>
+    </div>
+
+    {% if cartera and cartera|length > 0 %}
+    <div class="table-wrap">
+        <table class="tabla-posiciones">
+            <thead>
+                <tr>
+                    <th>Activo</th>
+                    <th class="num">Posición</th>
+                    <th class="num">Precio medio</th>
+                    <th class="num">Coste total</th>
+                    <th class="num">Precio actual</th>
+                    <th class="num">Valor actual</th>
+                    <th class="num">P/L no realizado</th>
+                    <th class="num">P/L %</th>
+                    <th class="num">Máx desde compra</th>
+                    <th class="num">Mín desde compra</th>
+                    <th class="num">Comisiones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cartera %}
+                <tr>
+                    <td>
+                        <span class="ticker-badge">{{ item.ticker }}</span>
+                        <div class="asset-nombre">{{ item.nombre }}</div>
+                    </td>
+                    <td class="num">{{ item.posicion_actual | num }}</td>
+                    <td class="num">
+                        {{ item.precio_medio_compra_eur | eur }}
+                        <span class="unidad-precio">{{ item.unidad_precio }}</span>
+                    </td>
+                    <td class="num">{{ item.coste_total_eur | eur }}</td>
+                    <td class="num">
+                        {% if item.precio_actual_eur > 0 %}
+                            {{ item.precio_actual_eur | eur }}
+                            <span class="unidad-precio">{{ item.unidad_precio }}</span>
+                        {% else %}
+                            <span class="muted">Sin precio</span>
+                        {% endif %}
+                    </td>
+                    <td class="num">{{ item.valor_actual_eur | eur }}</td>
+                    <td class="num {% if item.pnl_eur > 0 %}pnl-pos{% elif item.pnl_eur < 0 %}pnl-neg{% endif %}">
+                        {{ item.pnl_eur | eur }}
+                    </td>
+                    <td class="num {% if item.pnl_pct is not none and item.pnl_pct > 0 %}pnl-pos{% elif item.pnl_pct is not none and item.pnl_pct < 0 %}pnl-neg{% endif %}">
+                        {% if item.pnl_pct is not none %}
+                            {{ "%.2f"|format(item.pnl_pct) }}%
+                        {% else %}
+                            <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="num">
+                        {% if item.max_precio_eur > 0 %}
+                            {{ item.max_precio_eur | eur }}
+                            <span class="unidad-precio">{{ item.unidad_precio }}</span>
+                        {% else %}
+                            <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="num">
+                        {% if item.min_precio_eur > 0 %}
+                            {{ item.min_precio_eur | eur }}
+                            <span class="unidad-precio">{{ item.unidad_precio }}</span>
+                        {% else %}
+                            <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="num">{{ item.comisiones_eur | eur }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr style="border-top: 2px solid var(--border-strong); background: var(--surface-soft);">
+                    <td colspan="3" style="padding: 14px 16px; font-weight: 700;">Total</td>
+                    <td class="num" style="padding: 14px 16px; font-weight: 700;">{{ resumen_cartera.coste_abierto_eur | eur }}</td>
+                    <td></td>
+                    <td class="num" style="padding: 14px 16px; font-weight: 700;">{{ resumen_cartera.valor_actual_total_eur | eur }}</td>
+                    <td class="num {% if resumen_cartera.resultado_no_realizado_eur > 0 %}pnl-pos{% elif resumen_cartera.resultado_no_realizado_eur < 0 %}pnl-neg{% endif %}" style="padding: 14px 16px; font-weight: 700;">
+                        {{ resumen_cartera.resultado_no_realizado_eur | eur }}
+                    </td>
+                    <td class="num {% if resumen_cartera.resultado_no_realizado_eur > 0 %}pnl-pos{% elif resumen_cartera.resultado_no_realizado_eur < 0 %}pnl-neg{% endif %}" style="padding: 14px 16px; font-weight: 700;">
+                        {% if resumen_cartera.coste_abierto_eur > 0 %}
+                            {{ "%.2f"|format(resumen_cartera.resultado_no_realizado_eur / resumen_cartera.coste_abierto_eur * 100) }}%
+                        {% else %}—{% endif %}
+                    </td>
+                    <td colspan="3"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="footer-note">
+        El P/L no realizado compara el valor actual con el coste asignado a las posiciones abiertas.
+    </div>
+    {% else %}
+    <div class="empty-box">No hay posiciones abiertas en cartera.</div>
+    {% endif %}
+</div>
+
+<!-- Historial de ventas -->
+<div class="card">
+    <div class="section-head">
+        <div>
+            <h2>Historial de ventas</h2>
+            <p>Registro de todas las ventas con su resultado calculado.</p>
+        </div>
+    </div>
+
+    {% if historial_ventas and historial_ventas|length > 0 %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Activo</th>
+                    <th class="num">Cantidad</th>
+                    <th class="num">Precio venta</th>
+                    <th class="num">Importe bruto</th>
+                    <th class="num">Comisión</th>
+                    <th class="num">Importe neto</th>
+                    <th class="num">Coste asignado</th>
+                    <th class="num">Resultado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venta in historial_ventas %}
+                <tr>
+                    <td>{{ venta.fecha }}</td>
+                    <td>
+                        <span class="ticker-badge">{{ venta.ticker }}</span>
+                        <div class="asset-nombre">{{ venta.nombre }}</div>
+                    </td>
+                    <td class="num">{{ venta.cantidad_vendida | num }}</td>
+                    <td class="num">{{ venta.precio_venta_eur | eur }}</td>
+                    <td class="num">{{ venta.importe_bruto_venta_eur | eur }}</td>
+                    <td class="num">{{ venta.comision_venta_eur | eur }}</td>
+                    <td class="num">{{ venta.importe_neto_venta_eur | eur }}</td>
+                    <td class="num">{{ venta.coste_asignado_eur | eur }}</td>
+                    <td class="num {% if venta.resultado_realizado_eur > 0 %}pnl-pos{% elif venta.resultado_realizado_eur < 0 %}pnl-neg{% endif %}">
+                        {{ venta.resultado_realizado_eur | eur }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="footer-note">
+        Resultado realizado = importe neto de venta − coste asignado según precio medio vigente.
+    </div>
+    {% else %}
+    <div class="empty-box">Todavía no hay ventas registradas.</div>
+    {% endif %}
+</div>
+
+<!-- Resumen fiscal por año -->
+<div class="card">
+    <div class="section-head">
+        <div>
+            <h2>Resumen fiscal por año</h2>
+            <p>Resultado realizado agrupado por año fiscal, útil para la declaración de la renta.</p>
+        </div>
+    </div>
+
+    {% if fiscal_summary %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Año</th>
+                    <th class="num">Ventas</th>
+                    <th class="num">Resultado bruto</th>
+                    <th class="num">Comisiones de venta</th>
+                    <th class="num">Resultado neto</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for year, data in fiscal_summary %}
+                <tr>
+                    <td><strong>{{ year }}</strong></td>
+                    <td class="num">{{ data.num_ventas }}</td>
+                    <td class="num {% if data.resultado_eur > 0 %}pnl-pos{% elif data.resultado_eur < 0 %}pnl-neg{% endif %}">
+                        {{ data.resultado_eur | eur }}
+                    </td>
+                    <td class="num">{{ data.comisiones_eur | eur }}</td>
+                    <td class="num {% if (data.resultado_eur - data.comisiones_eur) > 0 %}pnl-pos{% elif (data.resultado_eur - data.comisiones_eur) < 0 %}pnl-neg{% endif %}">
+                        {{ (data.resultado_eur - data.comisiones_eur) | eur }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="footer-note">
+        El resultado neto descuenta las comisiones de venta. Consulta a un asesor fiscal para tu declaración.
+    </div>
+    {% else %}
+    <div class="empty-box">No hay ventas registradas para generar el resumen fiscal.</div>
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - Portfolio{% endblock %}
+
+{% block content %}
+<style>
+    .home-hero {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .home-hero-copy {
+        flex: 1 1 520px;
+    }
+
+    .home-hero-copy p {
+        margin-bottom: 0;
+        max-width: 72ch;
+    }
+
+    .home-hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .kpi-card {
+        padding: 18px 18px 16px;
+    }
+
+    .kpi-label {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 8px;
+    }
+
+    .kpi-value {
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .kpi-sub {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .chart-box {
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .chart-box .plotly-graph-div {
+        width: 100% !important;
+    }
+
+    .home-grid {
+        display: grid;
+        grid-template-columns: 1.3fr 0.7fr;
+        gap: 20px;
+    }
+
+    .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+
+    .section-head p {
+        margin-bottom: 0;
+    }
+
+    .mini-list {
+        display: grid;
+        gap: 12px;
+    }
+
+    .mini-item {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px;
+        background: var(--surface-soft);
+    }
+
+    .mini-item-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+
+    .mini-item-name {
+        font-weight: 700;
+    }
+
+    .mini-item-meta {
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .mini-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+    }
+
+    .mini-badge-buy {
+        background: var(--success-soft);
+        color: var(--success);
+    }
+
+    .mini-badge-sell {
+        background: var(--danger-soft);
+        color: var(--danger);
+    }
+
+    .summary-list {
+        display: grid;
+        gap: 12px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .summary-row:last-child {
+        border-bottom: none;
+    }
+
+    .summary-key {
+        color: var(--muted);
+    }
+
+    .summary-value {
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 14px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 14px;
+        border: 1px solid #dbe3f0;
+        background: var(--surface-soft);
+        color: #374151;
+        transition: 0.2s ease;
+    }
+
+    .chip:hover {
+        background: #eef2ff;
+        color: var(--primary);
+        border-color: #bfdbfe;
+    }
+
+    .chip.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    @media (max-width: 1000px) {
+        .kpi-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .home-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .kpi-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .kpi-value {
+            font-size: 26px;
+        }
+    }
+</style>
+
+<div class="card">
+    <div class="home-hero">
+        <div class="home-hero-copy">
+            <h1>Inicio</h1>
+            <p>
+                Resumen general de tu portfolio, con métricas rápidas, actividad reciente
+                y acceso directo a las secciones principales.
+            </p>
+        </div>
+
+        <div class="home-hero-actions">
+            <a href="{{ url_for('operaciones') }}" class="btn-link btn-primary">Añadir operación</a>
+            <a href="{{ url_for('cartera') }}" class="btn-link btn-secondary">Ver cartera</a>
+        </div>
+    </div>
+</div>
+
+<div class="kpi-grid">
+    <div class="card kpi-card">
+        <div class="kpi-label">Operaciones</div>
+        <div class="kpi-value">{{ total_operaciones }}</div>
+        <div class="kpi-sub">Registros totales en la base de datos</div>
+    </div>
+
+    <div class="card kpi-card">
+        <div class="kpi-label">Activos en cartera</div>
+        <div class="kpi-value">{{ activos_en_cartera }}</div>
+        <div class="kpi-sub">Posiciones abiertas actualmente</div>
+    </div>
+
+    <div class="card kpi-card">
+        <div class="kpi-label">Coste total</div>
+        <div class="kpi-value">{{ coste_total_cartera | eur }}</div>
+        <div class="kpi-sub">Capital neto invertido</div>
+    </div>
+
+    <div class="card kpi-card">
+        <div class="kpi-label">Valor actual</div>
+        <div class="kpi-value">{{ valor_actual_total | eur }}</div>
+        <div class="kpi-sub">
+            {% if pnl_total > 0 %}
+            <span class="pnl-pos">{{ pnl_total | eur }} (+{{ "%.2f"|format(pnl_pct) }}%)</span>
+            {% elif pnl_total < 0 %}
+            <span class="pnl-neg">{{ pnl_total | eur }} ({{ "%.2f"|format(pnl_pct) }}%)</span>
+            {% else %}
+            {{ pnl_total | eur }} (0.00%)
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if portfolio_chart %}
+<div class="card">
+    <div class="section-head">
+        <div>
+            <h2>Evolución de cartera</h2>
+            <p>Comparativa entre coste acumulado, valor actual y benchmark normalizado.</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <span style="font-size:13px;color:var(--muted);font-weight:600;">Benchmark:</span>
+            <a href="{{ url_for('index', benchmark='BTC') }}" class="chip {% if benchmark_key == 'BTC' %}active{% endif %}" style="font-size:13px;padding:6px 12px;">BTC</a>
+            <a href="{{ url_for('index', benchmark='ETH') }}" class="chip {% if benchmark_key == 'ETH' %}active{% endif %}" style="font-size:13px;padding:6px 12px;">ETH</a>
+            <a href="{{ url_for('index', benchmark='SP500') }}" class="chip {% if benchmark_key == 'SP500' %}active{% endif %}" style="font-size:13px;padding:6px 12px;">S&amp;P 500</a>
+            <a href="{{ url_for('index', benchmark='none') }}" class="chip {% if benchmark_key == 'none' %}active{% endif %}" style="font-size:13px;padding:6px 12px;">Ninguno</a>
+        </div>
+    </div>
+
+    <div class="chart-box">
+        {{ portfolio_chart | safe }}
+    </div>
+</div>
+{% endif %}
+
+<div class="home-grid">
+    <div class="card">
+        <div class="section-head">
+            <div>
+                <h2>Últimas operaciones</h2>
+                <p>Las 5 más recientes registradas.</p>
+            </div>
+            <a href="{{ url_for('operaciones') }}" class="btn-link btn-secondary">Ver todas</a>
+        </div>
+
+        {% if operaciones %}
+        <div class="mini-list">
+            {% for op in operaciones %}
+            <div class="mini-item">
+                <div class="mini-item-top">
+                    <div class="mini-item-name">
+                        {% if op["ticker"] %}
+                        {{ op["ticker"] }} · {{ op["nombre"] }}
+                        {% else %}
+                        {{ op["nombre"] }}
+                        {% endif %}
+                    </div>
+
+                    <span class="mini-badge {% if op['tipo'] == 'Compra' %}mini-badge-buy{% else %}mini-badge-sell{% endif %}">
+                        {{ op["tipo"] }}
+                    </span>
+                </div>
+
+                <div class="mini-item-meta">
+                    {{ op["fecha"] }} · {{ op["cantidad"] | num }} unidades · {{ op["precio_eur"] | eur }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty">Todavía no hay operaciones registradas.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="section-head">
+            <div>
+                <h2>Resumen</h2>
+                <p>Vista rápida de estado general.</p>
+            </div>
+        </div>
+
+        <div class="summary-list">
+            <div class="summary-row">
+                <div class="summary-key">Última actualización de precios</div>
+                <div class="summary-value">{{ last_update_text }}</div>
+            </div>
+
+            <div class="summary-row">
+                <div class="summary-key">Activos abiertos</div>
+                <div class="summary-value">{{ activos_en_cartera }}</div>
+            </div>
+
+            <div class="summary-row">
+                <div class="summary-key">PnL total estimado</div>
+                <div class="summary-value">
+                    {% if pnl_total > 0 %}
+                    <span class="pnl-pos">{{ pnl_total | eur }}</span>
+                    {% elif pnl_total < 0 %}
+                    <span class="pnl-neg">{{ pnl_total | eur }}</span>
+                    {% else %}
+                    {{ pnl_total | eur }}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="summary-row">
+                <div class="summary-key">Secciones rápidas</div>
+                <div class="summary-value">
+                    <a href="{{ url_for('operaciones') }}">Operaciones</a> ·
+                    <a href="{{ url_for('cartera') }}">Cartera</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

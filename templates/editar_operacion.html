@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Editar operación - Portfolio{% endblock %}
+
+{% block content %}
+<style>
+    .edit-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .edit-header-copy {
+        flex: 1 1 520px;
+    }
+
+    .edit-header-copy p {
+        margin-bottom: 0;
+        max-width: 72ch;
+    }
+
+    .edit-header-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .section-head p {
+        margin-bottom: 0;
+    }
+
+    .edit-meta {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .meta-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        background: #eef2ff;
+        color: #3730a3;
+    }
+
+    .meta-pill-muted {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .field-full {
+        grid-column: 1 / -1;
+    }
+
+    .field-group label {
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .field-help {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+    }
+
+    .form-actions-left,
+    .form-actions-right {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .danger-zone {
+        margin-top: 20px;
+        border: 1px solid #fecaca;
+        background: #fff7f7;
+    }
+
+    .danger-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .danger-copy h3 {
+        color: #991b1b;
+        margin-bottom: 6px;
+    }
+
+    .danger-copy p {
+        margin-bottom: 0;
+        color: #7f1d1d;
+    }
+
+    .btn-danger {
+        background: var(--danger);
+        color: white;
+        border: none;
+    }
+
+    .btn-danger:hover {
+        background: var(--danger-hover);
+    }
+
+    @media (max-width: 860px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .form-actions-left,
+        .form-actions-right {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .danger-box {
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<div class="card">
+    <div class="edit-header">
+        <div class="edit-header-copy">
+            <h1>Editar operación</h1>
+            <p>
+                Actualiza los datos de esta operación manteniendo el mismo formato y estructura
+                que en el registro original.
+            </p>
+        </div>
+
+        <div class="edit-header-actions">
+            <a href="{{ url_for('operaciones') }}" class="btn-link btn-secondary">Volver a operaciones</a>
+            <a href="{{ url_for('cartera') }}" class="btn-link btn-secondary">Ver cartera</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="section-head">
+        <div>
+            <h2>Datos de la operación</h2>
+            <p>Revisa los campos antes de guardar los cambios.</p>
+        </div>
+
+        <div class="edit-meta">
+            <span class="meta-pill meta-pill-muted">ID {{ op["id"] }}</span>
+            <span class="meta-pill">{{ op["tipo"] }}</span>
+        </div>
+    </div>
+
+    <form action="{{ url_for('actualizar_operacion', id=op['id']) }}" method="POST">
+        <div class="form-grid">
+            <div class="field-group">
+                <label for="fecha">Fecha</label>
+                <input type="date" id="fecha" name="fecha" value="{{ op['fecha'] }}" required>
+            </div>
+
+            <div class="field-group">
+                <label for="ticker">Ticker</label>
+                <input type="text" id="ticker" name="ticker" value="{{ op['ticker'] or '' }}" placeholder="Ej. BTC, ETH, ORO, PLATA">
+                <div class="field-help">Se guardará en mayúsculas automáticamente.</div>
+            </div>
+
+            <div class="field-group">
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" name="nombre" value="{{ op['nombre'] }}" required>
+            </div>
+
+            <div class="field-group">
+                <label for="tipo">Tipo</label>
+                <select id="tipo" name="tipo" required>
+                    <option value="Compra" {% if op["tipo"] == "Compra" %}selected{% endif %}>Compra</option>
+                    <option value="Venta" {% if op["tipo"] == "Venta" %}selected{% endif %}>Venta</option>
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label for="cantidad">Cantidad</label>
+                <input type="number" step="any" id="cantidad" name="cantidad" value="{{ op['cantidad'] }}" required>
+            </div>
+
+            <div class="field-group">
+                <label for="precio_eur">Precio en EUR</label>
+                <input type="number" step="any" id="precio_eur" name="precio_eur" value="{{ op['precio_eur'] }}" required>
+            </div>
+
+            <div class="field-group">
+                <label for="comision_eur">Comisión en EUR</label>
+                <input type="number" step="any" id="comision_eur" name="comision_eur" value="{{ op['comision_eur'] }}">
+            </div>
+
+            <div class="field-group">
+                <label for="estrategia">Estrategia</label>
+                <input type="text" id="estrategia" name="estrategia" value="{{ op['estrategia'] or '' }}">
+            </div>
+
+            <div class="field-group field-full">
+                <label for="notas">Notas</label>
+                <input type="text" id="notas" name="notas" value="{{ op['notas'] or '' }}">
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <div class="form-actions-left">
+                <a href="{{ url_for('operaciones') }}" class="btn-link btn-secondary">Cancelar</a>
+            </div>
+
+            <div class="form-actions-right">
+                <button type="submit" class="btn-primary">Guardar cambios</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="card danger-zone">
+    <div class="danger-box">
+        <div class="danger-copy">
+            <h3>Borrar operación</h3>
+            <p>Esta acción eliminará el registro de forma permanente.</p>
+        </div>
+
+        <form action="{{ url_for('borrar_operacion', id=op['id']) }}" method="POST" onsubmit="return confirm('¿Seguro que quieres borrar esta operación?');" style="margin: 0;">
+            <button type="submit" class="btn-link btn-danger">Borrar operación</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+#Portfolio v1.0#
