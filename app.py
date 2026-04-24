@@ -1300,4 +1300,12 @@ def importar_csv():
 init_db()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    from werkzeug.middleware.dispatcher import DispatcherMiddleware
+    from werkzeug.serving import run_simple
+
+    def _not_found(environ, start_response):
+        start_response("404 Not Found", [("Content-Type", "text/plain")])
+        return [b"Not Found"]
+
+    application = DispatcherMiddleware(_not_found, {"/portfolio": app})
+    run_simple("0.0.0.0", 5000, application)
